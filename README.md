@@ -1,92 +1,145 @@
-GovStack is a decentralized governance platform built on Stacks blockchain that enables transparent, efficient, and secure decision-making for DAOs. The platform leverages Clarity smart contracts to facilitate proposal creation, voting, and execution.
+# Token Validation Smart Contract
+
+## Overview
+This smart contract implements a token validation system on the Stacks blockchain using Clarity. It provides a secure way to validate token principals with built-in error handling and response management.
 
 ## Features
+- Principal-based token validation
+- Comprehensive error handling
+- Multiple validation approaches
+- Transaction sender verification
+- Configurable error responses
 
-- **Proposal Management**: Create and track governance proposals
-- **Token-Based Voting**: Voting power proportional to token holdings
-- **Secure Execution**: Automated proposal execution based on voting outcomes
-- **Quorum Requirements**: Minimum participation thresholds for proposal validity
-- **Time-Bound Voting**: Configurable voting periods for proposals
+## Contract Components
 
-## Smart Contract Overview
-
-### Key Functions
-
-1. `create-proposal`
-   - Creates a new governance proposal
-   - Requires minimum token threshold
-   - Parameters: title, description
-
-2. `cast-vote`
-   - Cast votes on active proposals
-   - Token-weighted voting system
-   - Parameters: proposal-id, vote (true/false), amount
-
-3. `execute-proposal`
-   - Executes successful proposals after voting period
-   - Requires quorum and majority approval
-   - Parameters: proposal-id
-
-### Constants
-
-- Minimum proposal threshold: 1,000,000 tokens
-- Voting period: 144 blocks (~24 hours)
-- Quorum requirement: 500,000 votes
-
-## Getting Started
-
-### Prerequisites
-
-- Stacks wallet
-- Governance tokens
-- Clarity CLI
-
-### Installation
-
-1. Clone the repository:
-```bash
-git clone https://github.com/your-username/govstack.git
-cd govstack
-```
-
-2. Deploy the contract:
-```bash
-clarinet contract deploy govstack
-```
-
-### Usage Example
-
+### Error Constants
 ```clarity
-;; Create a new proposal
-(contract-call? .govstack create-proposal "Update Protocol" "Proposal to upgrade protocol parameters")
-
-;; Cast a vote
-(contract-call? .govstack cast-vote u1 true u5000)
-
-;; Execute proposal
-(contract-call? .govstack execute-proposal u1)
+ERR-INVALID-TOKEN (err u1)    // Used when token validation fails
+ERR-VALIDATION-FAILED (err u2) // Used for general validation failures
 ```
 
-## Testing
+### Core Functions
 
-Run the test suite:
-```bash
-clarinet test
+#### `comprehensive-token-validation`
+Private function that handles the core validation logic.
+```clarity
+(define-private (comprehensive-token-validation (token principal)))
+```
+- **Parameters**: 
+  - `token`: Principal to validate
+- **Returns**: Response containing either:
+  - Success: Original token principal
+  - Error: ERR-INVALID-TOKEN
+
+#### `process-new-token`
+Public function implementing the primary validation approach.
+```clarity
+(define-public (process-new-token (new-token principal)))
+```
+- **Parameters**:
+  - `new-token`: Principal to process
+- **Returns**: Response containing either:
+  - Success: u1
+  - Error: ERR-VALIDATION-FAILED
+
+#### `process-new-token-alt`
+Alternative public function with direct matching approach.
+```clarity
+(define-public (process-new-token-alt (new-token principal)))
+```
+- **Parameters**:
+  - `new-token`: Principal to process
+- **Returns**: Response containing either:
+  - Success: u1
+  - Error: ERR-VALIDATION-FAILED
+
+## Usage
+
+### Basic Implementation
+```clarity
+;; Call the process-new-token function
+(contract-call? .token-contract process-new-token tx-sender)
+```
+
+### Alternative Approach
+```clarity
+;; Call the alternative processing function
+(contract-call? .token-contract process-new-token-alt tx-sender)
 ```
 
 ## Security Considerations
 
-- Token-weighted voting system
-- Time-locked execution
-- Quorum requirements
-- Access control mechanisms
-- Proposal threshold requirements
+### Principal Validation
+- The contract validates principals against the transaction sender
+- Additional validation rules can be implemented in the `comprehensive-token-validation` function
+- All error cases are explicitly handled
+
+### Error Handling
+- Uses explicit error codes for different failure scenarios
+- Implements match expressions for proper error propagation
+- Maintains type safety throughout the contract
+
+## Development
+
+### Prerequisites
+- Clarity CLI
+- Stacks blockchain node (for testing)
+- Clarity VS Code extension (recommended)
+
+### Testing
+1. Clone the repository
+2. Deploy the contract to a local Stacks node
+3. Run test cases against the deployed contract
+
+### Deployment
+1. Build the contract:
+```bash
+clarinet build
+```
+
+2. Deploy to testnet:
+```bash
+clarinet deploy --testnet
+```
+
+3. Deploy to mainnet:
+```bash
+clarinet deploy --mainnet
+```
+
+## Customization
+
+### Adding Custom Validation Rules
+Modify the `comprehensive-token-validation` function to add additional validation:
+
+```clarity
+(define-private (comprehensive-token-validation (token principal))
+    (if (and
+            (is-eq token tx-sender)
+            ;; Add additional validation here
+            (is-eq token contract-owner)
+        )
+        (ok token)
+        ERR-INVALID-TOKEN))
+```
+
+### Modifying Error Codes
+Add new error constants as needed:
+```clarity
+(define-constant ERR-CUSTOM-ERROR (err u3))
+```
+
+## Best Practices
+
+1. Always use explicit error handling
+2. Validate all inputs thoroughly
+3. Keep track of response types
+4. Use meaningful error codes
+5. Document function behavior
 
 ## Contributing
-
 1. Fork the repository
-2. Create your feature branch: `git checkout -b feature/AmazingFeature`
-3. Commit your changes: `git commit -m 'Add AmazingFeature'`
-4. Push to the branch: `git push origin feature/AmazingFeature`
-5. Open a Pull Request
+2. Create a feature branch
+3. Submit a pull request
+4. Ensure all tests pass
 
