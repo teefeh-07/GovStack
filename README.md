@@ -14,8 +14,10 @@ This smart contract implements a token validation system on the Stacks blockchai
 
 ### Error Constants
 ```clarity
-ERR-INVALID-TOKEN (err u1)    // Used when token validation fails
-ERR-VALIDATION-FAILED (err u2) // Used for general validation failures
+ERR-INVALID-TOKEN (err u1)      // Used when token validation fails
+ERR-VALIDATION-FAILED (err u2)  // Used for general validation failures
+ERR-UNAUTHORIZED (err u3)       // Used for unauthorized access attempts
+ERR-INVALID-PRINCIPAL (err u4)  // Used for invalid principal format
 ```
 
 ### Core Functions
@@ -51,7 +53,25 @@ Alternative public function with direct matching approach.
   - `new-token`: Principal to process
 - **Returns**: Response containing either:
   - Success: u1
-  - Error: ERR-VALIDATION-FAILED
+  - Error: ERR-VALIDATION-FAILED or ERR-INVALID-PRINCIPAL
+
+#### `validate-principal`
+Read-only function to check principal validity without state changes.
+```clarity
+(define-read-only (validate-principal (principal-to-check principal)))
+```
+- **Parameters**:
+  - `principal-to-check`: Principal to validate
+- **Returns**: Boolean indicating validity
+
+#### `get-validation-status`
+Read-only function to get comprehensive validation status.
+```clarity
+(define-read-only (get-validation-status (token principal)))
+```
+- **Parameters**:
+  - `token`: Principal to check
+- **Returns**: Response containing validation result
 
 ## Usage
 
@@ -88,8 +108,21 @@ Alternative public function with direct matching approach.
 
 ### Testing
 1. Clone the repository
-2. Deploy the contract to a local Stacks node
-3. Run test cases against the deployed contract
+2. Install Clarinet (if not already installed)
+3. Run the test suite:
+```bash
+clarinet test
+```
+4. Check contract syntax:
+```bash
+clarinet check
+```
+
+The test suite includes:
+- Successful token validation tests
+- Error handling validation
+- Read-only function testing
+- Edge case scenarios
 
 ### Deployment
 1. Build the contract:

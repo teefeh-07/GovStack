@@ -1,7 +1,7 @@
 [project]
 name = "GovStack"
-authors = []
-description = ""
+authors = ["teefeh-07 <boluwatifeoniyilo@gmail.com>"]
+description = "A comprehensive token validation smart contract system for the Stacks blockchain using Clarity. Provides secure principal validation with enhanced error handling and multiple validation approaches."
 telemetry = true
 requirements = []
 cache_dir = "/home/runner/Real/GovStack/./.requirements"
